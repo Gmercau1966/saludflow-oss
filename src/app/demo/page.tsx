@@ -4,6 +4,7 @@ import { DemoWorkspace } from "@/components/demo/DemoWorkspace";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { SecurityNotice } from "@/components/SecurityNotice";
+import { AnonymousSessionProvider } from "@/components/supabase/AnonymousSessionProvider";
 
 export const metadata: Metadata = {
   title: "Demo",
@@ -24,7 +25,8 @@ export default function DemoPage() {
             </h1>
             <p className="mt-4 max-w-3xl leading-7 text-slate-700">
               Filtra, abre y procesa expedientes mediante reglas deterministas.
-              Todo funciona con fixtures locales y estado en localStorage.
+              Todo funciona con fixtures sintéticos y un repositorio local por
+              defecto, con Supabase opcional para persistencia de demostración.
             </p>
             <Link
               className="mt-6 inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accent-strong"
@@ -35,7 +37,9 @@ export default function DemoPage() {
           </section>
           <SecurityNotice />
         </div>
-        <DemoWorkspace />
+        <AnonymousSessionProvider>
+          <DemoWorkspace />
+        </AnonymousSessionProvider>
       </main>
       <Footer />
     </div>

@@ -17,12 +17,9 @@ import {
   recordHumanDecision,
 } from "@/domain/process-case";
 import type { DemoState, ReviewDecision, SyntheticCase } from "@/domain/types";
-import {
-  createInitialDemoState,
-  loadDemoState,
-  resetCaseInState,
-  saveDemoState,
-} from "@/lib/demo-storage";
+import { useAnonymousSession } from "@/components/supabase/AnonymousSessionProvider";
+import { createInitialDemoState } from "@/lib/demo-storage";
+import { createCaseRepository } from "@/lib/repositories/factory";
 
 const stages = [
   "Clasificación",
@@ -46,27 +43,57 @@ const dateFormatter = new Intl.DateTimeFormat("es-ES", {
 });
 
 export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
+  const session = useAnonymousSession();
   const [state, setState] = useState<DemoState>(() => createInitialDemoState());
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeStage, setActiveStage] = useState(-1);
   const [feedback, setFeedback] = useState("");
+  const [loadError, setLoadError] = useState("");
   const [reviewNote, setReviewNote] = useState("");
   const [editedDraft, setEditedDraft] = useState("");
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setState(loadDemoState());
-      setIsLoaded(true);
-    }, 0);
+    let cancelled = false;
 
-    return () => window.clearTimeout(timer);
-  }, []);
+    async function loadCase() {
+      if (session.status !== "ready") {
+        return;
+      }
 
-  useEffect(() => {
-    if (isLoaded) {
-      saveDemoState(state);
+      try {
+        setLoadError("");
+        const repository = createCaseRepository({
+          supabase: session.supabase ?? undefined,
+          ownerId: session.userId ?? undefined,
+        });
+        await repository.seedIfEmpty();
+        const caseItem = await repository.getCase(caseId);
+        if (!cancelled) {
+          setState({
+            cases: caseItem ? [caseItem] : [],
+            lastUpdatedAt: new Date().toISOString(),
+            storageVersion: 1,
+          });
+          setIsLoaded(true);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "No se pudo cargar el expediente.",
+          );
+          setIsLoaded(true);
+        }
+      }
     }
-  }, [isLoaded, state]);
+
+    void loadCase();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [caseId, session.status, session.supabase, session.userId]);
 
   const caseItem = useMemo(
     () => state.cases.find((item) => item.id === caseId),
@@ -88,8 +115,16 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
   if (!isLoaded) {
     return (
       <div className="rounded-lg border border-border bg-surface p-8">
-        Cargando expediente desde estado local...
+        Cargando expediente de la demo...
       </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <section className="rounded-lg border border-red-200 bg-red-50 p-8 text-red-900">
+        {loadError}
+      </section>
     );
   }
 
@@ -112,7 +147,12 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
     );
   }
 
-  function updateCase(nextCase: SyntheticCase) {
+  async function updateCase(nextCase: SyntheticCase) {
+    const repository = createCaseRepository({
+      supabase: session.supabase ?? undefined,
+      ownerId: session.userId ?? undefined,
+    });
+    await repository.updateCase(nextCase);
     setState((current) => ({
       ...current,
       cases: current.cases.map((item) => (item.id === nextCase.id ? nextCase : item)),
@@ -132,7 +172,7 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
     });
     window.setTimeout(() => {
       const nextCase = processCase(caseItem);
-      updateCase(nextCase);
+      void updateCase(nextCase);
       setActiveStage(stages.length);
       setFeedback(
         nextCase.requiresHumanReview
@@ -142,17 +182,28 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
     }, stages.length * 280 + 120);
   }
 
-  function handleResetCase() {
+  async function handleResetCase() {
     if (window.confirm("¿Reiniciar este expediente sintético?")) {
-      setState((current) => resetCaseInState(current, caseId));
-      setFeedback("Expediente reiniciado desde fixture local.");
+      const repository = createCaseRepository({
+        supabase: session.supabase ?? undefined,
+        ownerId: session.userId ?? undefined,
+      });
+      const resetCase = await repository.resetCase(caseId);
+      if (resetCase) {
+        setState({
+          cases: [resetCase],
+          lastUpdatedAt: new Date().toISOString(),
+          storageVersion: 1,
+        });
+      }
+      setFeedback("Expediente reiniciado desde el repositorio de demostración.");
       setReviewNote("");
       setEditedDraft("");
       setActiveStage(-1);
     }
   }
 
-  function handleDecision(decision: ReviewDecision) {
+  async function handleDecision(decision: ReviewDecision) {
     if (!caseItem) {
       return;
     }
@@ -179,7 +230,7 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
         reviewNote,
         editedDraft,
       );
-      updateCase(nextCase);
+      await updateCase(nextCase);
       setFeedback(`Decisión registrada: ${decisionLabels[decision]}.`);
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Error inesperado.");

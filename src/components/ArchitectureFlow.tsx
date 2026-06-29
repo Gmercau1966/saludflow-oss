@@ -1,11 +1,11 @@
 const steps = [
   { label: "Interfaz Next.js", state: "Presente" },
   { label: "API / Server Actions", state: "Parcial" },
-  { label: "Workflow administrativo", state: "Previsto" },
-  { label: "Herramientas deterministas", state: "Previsto" },
+  { label: "Workflow administrativo", state: "Presente" },
+  { label: "Herramientas deterministas", state: "Presente" },
   { label: "Proveedor de IA configurable", state: "Previsto" },
-  { label: "Revisión humana", state: "Previsto" },
-  { label: "Supabase + auditoría + métricas", state: "Previsto" },
+  { label: "Revisión humana", state: "Parcial" },
+  { label: "Supabase + auditoría + métricas", state: "Parcial" },
 ];
 
 export function ArchitectureFlow() {

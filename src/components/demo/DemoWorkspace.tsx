@@ -15,12 +15,9 @@ import {
 } from "@/data/synthetic-cases";
 import { calculateDemoMetrics } from "@/domain/metrics";
 import type { DemoState, SyntheticCase } from "@/domain/types";
-import {
-  createInitialDemoState,
-  loadDemoState,
-  resetDemoState,
-  saveDemoState,
-} from "@/lib/demo-storage";
+import { useAnonymousSession } from "@/components/supabase/AnonymousSessionProvider";
+import { createInitialDemoState } from "@/lib/demo-storage";
+import { createCaseRepository } from "@/lib/repositories/factory";
 
 type SortOrder = "newest" | "oldest";
 
@@ -69,8 +66,10 @@ function filterCases(
 }
 
 export function DemoWorkspace() {
+  const session = useAnonymousSession();
   const [state, setState] = useState<DemoState>(() => createInitialDemoState());
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [status, setStatus] = useState<"all" | CaseStatus>("all");
   const [risk, setRisk] = useState<"all" | RiskLevel>("all");
   const [source, setSource] = useState<"all" | IntakeSource>("all");
@@ -78,19 +77,46 @@ export function DemoWorkspace() {
   const [sort, setSort] = useState<SortOrder>("newest");
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setState(loadDemoState());
-      setIsLoaded(true);
-    }, 0);
+    let cancelled = false;
 
-    return () => window.clearTimeout(timer);
-  }, []);
+    async function loadCases() {
+      if (session.status !== "ready") {
+        return;
+      }
 
-  useEffect(() => {
-    if (isLoaded) {
-      saveDemoState(state);
+      try {
+        setLoadError("");
+        const repository = createCaseRepository({
+          supabase: session.supabase ?? undefined,
+          ownerId: session.userId ?? undefined,
+        });
+        const cases = await repository.seedIfEmpty();
+        if (!cancelled) {
+          setState({
+            cases,
+            lastUpdatedAt: new Date().toISOString(),
+            storageVersion: 1,
+          });
+          setIsLoaded(true);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "No se pudo cargar la bandeja.",
+          );
+          setIsLoaded(true);
+        }
+      }
     }
-  }, [isLoaded, state]);
+
+    void loadCases();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [session.status, session.supabase, session.userId]);
 
   const filteredCases = useMemo(
     () => filterCases(state.cases, status, risk, source, query, sort),
@@ -106,9 +132,22 @@ export function DemoWorkspace() {
     setSort("newest");
   }
 
-  function handleResetDemo() {
-    if (window.confirm("¿Reiniciar toda la demo local?")) {
-      setState(resetDemoState());
+  async function handleResetDemo() {
+    if (
+      window.confirm(
+        "¿Reiniciar toda la demo? Se eliminarán los expedientes creados manualmente en este entorno.",
+      )
+    ) {
+      const repository = createCaseRepository({
+        supabase: session.supabase ?? undefined,
+        ownerId: session.userId ?? undefined,
+      });
+      const cases = await repository.resetDemo();
+      setState({
+        cases,
+        lastUpdatedAt: new Date().toISOString(),
+        storageVersion: 1,
+      });
     }
   }
 
@@ -254,7 +293,11 @@ export function DemoWorkspace() {
             ) : null}
           </div>
         </div>
-        {isLoaded ? (
+        {loadError ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-red-900">
+            {loadError}
+          </div>
+        ) : isLoaded ? (
           filteredCases.length > 0 ? (
             <div className="grid gap-4 lg:grid-cols-2">
               {filteredCases.map((caseItem) => (
@@ -274,14 +317,15 @@ export function DemoWorkspace() {
           )
         ) : (
           <div className="rounded-lg border border-border bg-surface p-8">
-            Cargando estado local de la demo...
+            Cargando bandeja de la demo...
           </div>
         )}
       </section>
 
       <section className="rounded-lg border border-dashed border-border bg-surface p-5 text-sm text-slate-600">
-        El estado se conserva en localStorage. No se usan cookies, servicios
-        externos, Supabase ni proveedores de IA.
+        El estado se conserva en localStorage en modo local o en Supabase con
+        sesión anónima cuando el modo remoto está activado. No se usan
+        proveedores de IA.
         <Link className="ml-2 font-semibold text-accent" href="/architecture">
           Ver arquitectura objetivo
         </Link>
