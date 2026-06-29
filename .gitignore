@@ -1,0 +1,53 @@
+# dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# testing
+coverage/
+playwright-report/
+test-results/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+dist/
+
+# local env files
+.env
+.env.*
+!.env.example
+
+# vercel
+.vercel/
+
+# supabase local
+supabase/.temp/
+supabase/.branches/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# system
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Python / notebooks
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# temporary
+tmp/
+temp/
