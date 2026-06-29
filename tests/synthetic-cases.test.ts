@@ -21,6 +21,8 @@ describe("synthetic cases", () => {
       expect(caseItem.status.trim()).not.toBe("");
       expect(caseItem.risk.trim()).not.toBe("");
       expect(caseItem.receivedAt.trim()).not.toBe("");
+      expect(caseItem.originalText.trim()).not.toBe("");
+      expect(caseItem.auditEvents.length).toBeGreaterThan(0);
     });
   });
 });

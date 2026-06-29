@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { SyntheticCase } from "@/data/synthetic-cases";
 import { RiskBadge } from "@/components/RiskBadge";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -20,7 +21,12 @@ export function CaseCard({ caseItem }: { caseItem: SyntheticCase }) {
             {caseItem.id}
           </p>
           <h3 className="mt-2 text-lg font-semibold text-slate-950">
-            {caseItem.subject}
+            <Link
+              className="rounded-sm hover:text-accent"
+              href={`/demo/cases/${caseItem.id}`}
+            >
+              {caseItem.subject}
+            </Link>
           </h3>
         </div>
         <SyntheticDataBadge />
@@ -40,15 +46,15 @@ export function CaseCard({ caseItem }: { caseItem: SyntheticCase }) {
           </dd>
         </div>
         <div>
-          <dt className="text-slate-500">Confianza fixture</dt>
+          <dt className="text-slate-500">Confianza simulada</dt>
           <dd className="mt-1 font-medium text-slate-900">
             {Math.round(caseItem.confidence * 100)}%
           </dd>
         </div>
         <div>
-          <dt className="text-slate-500">Revisión humana</dt>
+          <dt className="text-slate-500">Documentos</dt>
           <dd className="mt-1 font-medium text-slate-900">
-            {caseItem.requiresHumanReview ? "Requerida" : "No requerida"}
+            {caseItem.documentsPresented.length}/{caseItem.requiredDocuments.length}
           </dd>
         </div>
       </dl>
@@ -57,6 +63,12 @@ export function CaseCard({ caseItem }: { caseItem: SyntheticCase }) {
         <StatusBadge status={caseItem.status} />
         <RiskBadge risk={caseItem.risk} />
       </div>
+      <Link
+        className="mt-5 inline-flex min-h-10 items-center justify-center rounded-md border border-border px-4 text-sm font-semibold text-slate-900 transition hover:bg-surface-muted"
+        href={`/demo/cases/${caseItem.id}`}
+      >
+        Abrir expediente
+      </Link>
     </article>
   );
 }

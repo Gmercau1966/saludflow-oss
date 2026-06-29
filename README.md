@@ -2,7 +2,7 @@
 
 Agente administrativo sanitario open source con supervisión humana, datos sintéticos y trazabilidad completa.
 
-> **Estado:** foundation técnica y visual con Next.js.
+> **Estado:** workflow local funcional con Next.js.
 > **Uso:** demostrador tecnológico y portfolio profesional.  
 > **Restricción:** no está diseñado para diagnóstico, tratamiento, decisiones clínicas ni procesamiento de expedientes sanitarios reales.
 
@@ -20,7 +20,7 @@ SaludFlow OSS demuestra cómo automatizar de forma segura tareas administrativas
 - registro de auditoría;
 - medición de calidad, eficiencia y ROI.
 
-La foundation actual solo implementa la base visual, rutas iniciales, fixtures sintéticos locales y pruebas unitarias básicas.
+La versión actual implementa un primer slice vertical local: bandeja de expedientes, análisis determinista, revisión humana simulada, audit log local, métricas y persistencia en `localStorage`.
 
 ## Principios de diseño
 
@@ -53,7 +53,8 @@ npm run dev
 Rutas disponibles:
 
 - `/`: landing profesional con aviso de alcance.
-- `/demo`: bandeja simulada con expedientes sintéticos locales.
+- `/demo`: bandeja interactiva con filtros, búsqueda, métricas y reinicio de demo.
+- `/demo/cases/[id]`: expediente sintético con análisis determinista, revisión humana y audit log.
 - `/architecture`: arquitectura objetivo, separando presente y futuro.
 - `/api/health`: health check JSON sin caché.
 
@@ -77,7 +78,7 @@ npm run build
 - **CI/CD:** GitHub + Vercel Preview Deployments en fases posteriores.
 - **Licencia:** Apache-2.0.
 
-## Alcance de esta foundation
+## Alcance actual
 
 - Next.js App Router con estructura `src/`.
 - TypeScript estricto.
@@ -86,8 +87,14 @@ npm run build
 - Alias `@/*`.
 - Componentes reutilizables de layout, badges, avisos, tarjetas y diagrama.
 - Datos sintéticos locales en `src/data/synthetic-cases.ts`.
+- Workflow determinista en `src/domain/process-case.ts`.
+- Persistencia local en `localStorage`.
+- Bandeja con filtros reales por estado, riesgo, texto y orden por fecha.
+- Página de expediente con solicitud original, datos extraídos, documentación, procedimiento ficticio, resultado del análisis, borrador editable y revisión humana.
+- Audit log local con eventos estructurados.
+- Dashboard local calculado desde fixtures.
 - Health check en `/api/health`.
-- Tests iniciales con Vitest.
+- Tests unitarios con Vitest.
 
 ## Limitaciones actuales
 
@@ -102,9 +109,21 @@ No está implementado todavía:
 - embeddings;
 - workflows persistentes;
 - aprobación humana real;
-- dashboard de métricas;
+- dashboard de métricas conectado a datos reales;
 - analítica externa;
 - formularios que envíen información.
+
+También sigue siendo simulado:
+
+- la clasificación;
+- la extracción de datos;
+- la confianza;
+- el cálculo de riesgo;
+- los procedimientos;
+- los tiempos administrativos;
+- la revisión humana.
+
+Todo se calcula a partir de fixtures locales y reglas deterministas. No hay llamadas externas.
 
 ## Flujo funcional objetivo
 
@@ -156,19 +175,38 @@ Todos los expedientes incluidos son fixtures locales y están marcados con `synt
 
 Las puntuaciones de confianza son valores de demostración entre `0` y `1`; no proceden de un modelo real.
 
+## Qué puedes probar
+
+1. Abrir `/demo`.
+2. Filtrar por estado o riesgo.
+3. Buscar por ID, asunto o categoría.
+4. Ordenar por fecha.
+5. Abrir un expediente.
+6. Pulsar `Analizar expediente`.
+7. Revisar reglas activadas, documentación faltante, borrador y audit log.
+8. Registrar una decisión como `Usuario demo`.
+9. Ver cómo cambian las métricas de la bandeja.
+
+Para reiniciar:
+
+- usa `Reiniciar caso` dentro de un expediente;
+- usa `Reiniciar demo` en `/demo`;
+- también puedes borrar manualmente la clave `saludflow-oss-demo-state-v1` de `localStorage`.
+
 ## Roadmap resumido
 
 - [x] Fase 1 — Foundation Next.js, rutas iniciales, fixtures y tests básicos.
-- [ ] Fase 2 — CI, documentación ampliada y smoke tests.
-- [ ] Fase 3 — Supabase, migraciones y RLS.
-- [ ] Fase 4 — Expedientes sintéticos persistidos sin IA.
-- [ ] Fase 5 — Clasificación y extracción estructurada.
-- [ ] Fase 6 — RAG sobre procedimientos.
-- [ ] Fase 7 — Human-in-the-Loop.
-- [ ] Fase 8 — Auditoría y gobernanza.
-- [ ] Fase 9 — Evaluaciones y regresiones.
-- [ ] Fase 10 — Dashboard de KPIs y ROI.
-- [ ] Fase 11 — Publicación v1.0.0.
+- [x] Fase 2 — Workflow local determinista, revisión humana simulada y dashboard local.
+- [ ] Fase 3 — CI, documentación ampliada y smoke tests.
+- [ ] Fase 4 — Supabase, migraciones y RLS.
+- [ ] Fase 5 — Expedientes sintéticos persistidos sin IA.
+- [ ] Fase 6 — Clasificación y extracción estructurada.
+- [ ] Fase 7 — RAG sobre procedimientos.
+- [ ] Fase 8 — Human-in-the-Loop real.
+- [ ] Fase 9 — Auditoría y gobernanza persistente.
+- [ ] Fase 10 — Evaluaciones y regresiones.
+- [ ] Fase 11 — Dashboard de KPIs y ROI conectado.
+- [ ] Fase 12 — Publicación v1.0.0.
 
 ## Documentación
 
