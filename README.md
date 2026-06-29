@@ -2,23 +2,141 @@
 
 Agente administrativo sanitario open source con supervisión humana, datos sintéticos y trazabilidad completa.
 
-> **Estado:** fase de diseño y scaffolding.  
+> **Estado:** demo local funcional con formulario web, workflow determinista y revisión humana simulada.
 > **Uso:** demostrador tecnológico y portfolio profesional.  
 > **Restricción:** no está diseñado para diagnóstico, tratamiento, decisiones clínicas ni procesamiento de expedientes sanitarios reales.
 
 ## Objetivo
 
-SaludFlow OSS automatiza de forma segura tareas administrativas simuladas de un servicio de salud:
+SaludFlow OSS demuestra cómo automatizar de forma segura tareas administrativas sanitarias simuladas:
 
+- recepción de solicitudes sintéticas mediante formulario web;
 - clasificación de solicitudes;
 - extracción estructurada de datos;
 - comprobación de documentación;
-- consulta de procedimientos;
+- consulta de procedimientos ficticios;
 - generación de borradores;
-- evaluación de riesgo y confianza;
-- revisión humana obligatoria cuando corresponde;
+- evaluación de riesgo y confianza simulada;
+- revisión humana cuando corresponde;
 - registro de auditoría;
-- medición de calidad, eficiencia y ROI.
+- métricas locales de la demo.
+
+## Qué puedes probar
+
+1. Abre `/solicitud`.
+2. Completa una solicitud ficticia o usa un preset.
+3. Revisa la vista previa.
+4. Confirma el envío.
+5. Abre el expediente creado o vuelve a `/demo`.
+6. Filtra la bandeja por origen `Formulario web`.
+7. Ejecuta el análisis determinista del expediente.
+8. Registra una decisión humana simulada si el caso lo requiere.
+
+El expediente se guarda en `localStorage`, aparece al inicio de `/demo` y puede procesarse con el workflow existente.
+
+## Rutas disponibles
+
+- `/`: landing profesional con aviso de alcance.
+- `/solicitud`: formulario público para crear solicitudes sintéticas.
+- `/demo`: bandeja interactiva con filtros, búsqueda, métricas y reinicio de demo.
+- `/demo/cases/[id]`: expediente sintético con análisis determinista, revisión humana y audit log.
+- `/architecture`: arquitectura actual y componentes futuros.
+- `/api/health`: health check JSON sin caché.
+
+## Arquitectura actual
+
+- Next.js App Router con TypeScript estricto.
+- Tailwind CSS.
+- Datos sintéticos versionados en `src/data/synthetic-cases.ts`.
+- Modelo de dominio en `src/domain/types.ts`.
+- Validación del formulario en `src/domain/validate-web-form.ts`.
+- Creación de expedientes web en `src/domain/web-form-intake.ts`.
+- Workflow determinista en `src/domain/process-case.ts`.
+- Persistencia local en `src/lib/demo-storage.ts`.
+- Tests unitarios con Vitest.
+
+## Flujo del canal web
+
+```text
+Formulario
+        ↓
+Validación y vista previa
+        ↓
+Confirmación
+        ↓
+Expediente canónico
+        ↓
+localStorage
+        ↓
+Bandeja /demo
+        ↓
+Workflow determinista
+        ↓
+Revisión humana simulada
+```
+
+## Datos sintéticos
+
+Usa únicamente datos ficticios. No introduzcas nombres reales, documentos de identidad, información clínica, teléfonos, direcciones, correos reales ni datos de contacto reales.
+
+Los expedientes de semilla usan `source: "seed_fixture"`. Los expedientes creados desde `/solicitud` usan `source: "web_form"`.
+
+## Persistencia local
+
+La demo guarda el estado en `localStorage` bajo una clave local del navegador. No usa cookies, Supabase, almacenamiento externo ni servicios de terceros.
+
+Para reiniciar:
+
+- usa `Reiniciar demo` en `/demo`;
+- usa `Reiniciar caso` dentro de un expediente;
+- o borra manualmente la clave `saludflow-oss-demo-state-v1` de `localStorage`.
+
+## Limitaciones actuales
+
+No está implementado todavía:
+
+- Supabase;
+- autenticación;
+- base de datos persistente;
+- email real;
+- Gmail, IMAP o webhooks;
+- IA;
+- RAG;
+- embeddings;
+- adjuntos reales;
+- notificaciones;
+- analytics;
+- datos personales o clínicos.
+
+El canal email queda previsto para una fase futura: `email → análisis con IA → normalización → expediente canónico`. Supabase también queda previsto para persistencia, Auth y RLS.
+
+## Requisitos previos
+
+- Node.js 20.9 o superior.
+- npm.
+
+## Instalación
+
+```bash
+npm install
+```
+
+No crees `.env.local` para esta iteración. La demo no necesita secretos ni servicios externos.
+
+## Ejecución local
+
+```bash
+npm run dev
+```
+
+## Comandos de calidad
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
 
 ## Principios de diseño
 
@@ -29,73 +147,18 @@ SaludFlow OSS automatiza de forma segura tareas administrativas simuladas de un 
 5. **Evaluación continua:** cada versión se valida contra un conjunto de casos sintéticos.
 6. **Open source:** código, documentación, evaluaciones y decisiones arquitectónicas públicas.
 
-## Arquitectura objetivo
-
-- **Frontend y backend:** Next.js + TypeScript
-- **Despliegue:** Vercel Hobby
-- **Base de datos y autenticación:** Supabase Free
-- **IA:** proveedor configurable; modo Replay sin consumo de API
-- **Búsqueda semántica:** PostgreSQL + pgvector
-- **Pruebas:** Vitest + Playwright
-- **CI/CD:** GitHub + Vercel Preview Deployments
-- **Licencia:** Apache-2.0
-
-## Flujo funcional
-
-```text
-Solicitud sintética
-        ↓
-Clasificación
-        ↓
-Extracción de datos
-        ↓
-Validación documental
-        ↓
-Consulta de procedimientos
-        ↓
-Generación de borrador
-        ↓
-Evaluación de riesgo y confianza
-        ↓
-Revisión humana si corresponde
-        ↓
-Auditoría, métricas y cierre
-```
-
-## Estructura inicial
-
-```text
-saludflow-oss/
-├── README.md
-├── LICENSE
-├── SECURITY.md
-├── AGENTS.md
-├── .gitignore
-├── docs/
-│   ├── PRD_SaludFlow_OSS_Tecnico_Funcional.docx
-│   └── GITHUB_SETUP.md
-├── scripts/
-│   ├── setup-labels.sh
-│   └── setup-labels.ps1
-└── .github/
-    └── ISSUE_TEMPLATE/
-        ├── bug.yml
-        └── feature.yml
-```
-
 ## Roadmap resumido
 
-- [ ] Fase 1 — Repositorio, documentación y CI básico
-- [ ] Fase 2 — Scaffolding Next.js
-- [ ] Fase 3 — Supabase, migraciones y RLS
-- [ ] Fase 4 — Expedientes sintéticos sin IA
-- [ ] Fase 5 — Clasificación y extracción estructurada
-- [ ] Fase 6 — RAG sobre procedimientos
-- [ ] Fase 7 — Human-in-the-Loop
-- [ ] Fase 8 — Auditoría y gobernanza
-- [ ] Fase 9 — Evaluaciones y regresiones
-- [ ] Fase 10 — Dashboard de KPIs y ROI
-- [ ] Fase 11 — Publicación v1.0.0
+- [x] Foundation Next.js.
+- [x] Workflow determinista local.
+- [x] Canal web de recepción sintética.
+- [ ] Supabase, migraciones y RLS.
+- [ ] Canal email normalizado.
+- [ ] Proveedor de IA configurable.
+- [ ] RAG sobre procedimientos.
+- [ ] Human-in-the-Loop real y persistente.
+- [ ] Evaluaciones y dashboard de KPIs.
+- [ ] Publicación v1.0.0.
 
 ## Documentación
 
@@ -110,7 +173,7 @@ saludflow-oss/
 - No incluir claves API en el repositorio.
 - No registrar prompts o respuestas con datos sensibles.
 - No usar la aplicación para decisiones clínicas.
-- No desplegar sin autenticación las rutas de revisión y administración.
+- No desplegar sin autenticación rutas futuras de revisión y administración.
 - Reportar vulnerabilidades según [SECURITY.md](SECURITY.md).
 
 ## Licencia
