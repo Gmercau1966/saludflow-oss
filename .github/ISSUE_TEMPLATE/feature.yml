@@ -1,1 +1,35 @@
+name: Feature
+description: Proponer una capacidad o mejora
+title: "[Feature]: "
+labels: ["feature"]
 
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema
+      description: ¿Qué problema resuelve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Alcance
+      description: Describe lo que debe incluir y lo que queda fuera.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación
+      description: Lista verificable de condiciones.
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Riesgos y seguridad
+      description: Datos, permisos, IA, RLS, privacidad o acciones sensibles.
