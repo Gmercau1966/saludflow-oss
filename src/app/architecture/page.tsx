@@ -22,14 +22,12 @@ const targetComponents = [
 ];
 
 const notImplemented = [
-  "Supabase",
-  "autenticación",
   "IA",
   "RAG",
   "email",
-  "workflows persistentes",
   "aprobación humana real",
-  "dashboard de métricas",
+  "adjuntos reales",
+  "notificaciones",
 ];
 
 export default function ArchitecturePage() {
@@ -45,9 +43,10 @@ export default function ArchitecturePage() {
             Foundation presente y componentes previstos
           </h1>
           <p className="mt-4 leading-7 text-slate-700">
-            Esta iteración crea la base visual y técnica. La arquitectura
-            completa está diseñada para incorporar persistencia, revisión humana
-            real, evaluación y proveedores configurables en fases posteriores.
+            Esta iteración incorpora la foundation de Supabase como backend
+            opcional con sesión anónima, migración SQL y RLS. El modo local
+            sigue siendo el valor por defecto para la demo sin servicios
+            externos.
           </p>
         </section>
 
@@ -80,9 +79,9 @@ export default function ArchitecturePage() {
                 "Formulario web",
                 "Validación y normalización",
                 "Expediente canónico",
-                "Almacenamiento local",
+                "Repositorio local o Supabase",
                 "Workflow determinista",
-                "Revisión humana",
+                "Revisión humana simulada",
               ].map((step) => (
                 <li
                   className="rounded-md border border-border bg-surface-muted p-3"

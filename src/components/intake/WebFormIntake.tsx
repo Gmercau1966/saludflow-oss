@@ -18,11 +18,8 @@ import {
   type WebFormValidationError,
 } from "@/domain/validate-web-form";
 import type { CaseCategory, SyntheticCase } from "@/domain/types";
-import {
-  addCaseToState,
-  loadDemoState,
-  saveDemoState,
-} from "@/lib/demo-storage";
+import { useAnonymousSession } from "@/components/supabase/AnonymousSessionProvider";
+import { createCaseRepository } from "@/lib/repositories/factory";
 
 type Step = "edit" | "review" | "done";
 
@@ -90,11 +87,13 @@ function errorsByField(errors: WebFormValidationError[]) {
 }
 
 export function WebFormIntake() {
+  const session = useAnonymousSession();
   const [step, setStep] = useState<Step>("edit");
   const [form, setForm] = useState<WebFormInput>(emptyForm);
   const [errors, setErrors] = useState<WebFormValidationError[]>([]);
   const [createdCase, setCreatedCase] = useState<SyntheticCase | null>(null);
   const [message, setMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const fieldErrors = useMemo(() => errorsByField(errors), [errors]);
   const documents = documentOptionsByCategory[form.category as CaseCategory] ?? [];
 
@@ -134,7 +133,7 @@ export function WebFormIntake() {
     setMessage("Solicitud validada. Revisa antes de confirmar.");
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     const result = validateWebForm(form);
     if (!result.valid) {
       setStep("edit");
@@ -143,12 +142,33 @@ export function WebFormIntake() {
       return;
     }
 
-    const newCase = createCaseFromWebForm(result.data);
-    const state = addCaseToState(loadDemoState(), newCase);
-    saveDemoState(state);
-    setCreatedCase(newCase);
-    setStep("done");
-    setMessage("Solicitud recibida y guardada en la bandeja local.");
+    if (session.status !== "ready") {
+      setMessage("Espera a que la sesión de demostración esté lista.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const repository = createCaseRepository({
+        supabase: session.supabase ?? undefined,
+        ownerId: session.userId ?? undefined,
+      });
+      const newCase = createCaseFromWebForm(result.data);
+      await repository.createCase(newCase);
+      setCreatedCase(newCase);
+      setStep("done");
+      setMessage(
+        session.mode === "local"
+          ? "Solicitud recibida y guardada en la bandeja local."
+          : "Solicitud recibida y guardada en Supabase.",
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "No se pudo guardar la solicitud.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function handleCreateAnother() {
@@ -184,7 +204,9 @@ export function WebFormIntake() {
       </ol>
 
       <p className="mb-5 text-sm text-slate-700" aria-live="polite">
-        {message || "Completa una solicitud ficticia para crear un expediente local."}
+        {message ||
+          session.message ||
+          "Completa una solicitud ficticia para crear un expediente."}
       </p>
 
       {step === "edit" ? (
@@ -402,11 +424,12 @@ export function WebFormIntake() {
               Volver a editar
             </button>
             <button
-              className="min-h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accent-strong"
+              className="min-h-11 rounded-md bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isSaving || session.status !== "ready"}
               onClick={handleConfirm}
               type="button"
             >
-              Confirmar envío
+              {isSaving ? "Guardando..." : "Confirmar envío"}
             </button>
           </div>
         </div>

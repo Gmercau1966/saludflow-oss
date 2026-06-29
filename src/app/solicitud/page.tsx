@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { WebFormIntake } from "@/components/intake/WebFormIntake";
+import { AnonymousSessionProvider } from "@/components/supabase/AnonymousSessionProvider";
 
 export const metadata: Metadata = {
   title: "Crear solicitud",
@@ -36,7 +37,9 @@ export default function SolicitudPage() {
             </p>
           </aside>
         </section>
-        <WebFormIntake />
+        <AnonymousSessionProvider>
+          <WebFormIntake />
+        </AnonymousSessionProvider>
       </main>
       <Footer />
     </div>

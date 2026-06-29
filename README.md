@@ -2,7 +2,7 @@
 
 Agente administrativo sanitario open source con supervisión humana, datos sintéticos y trazabilidad completa.
 
-> **Estado:** demo local funcional con formulario web, workflow determinista y revisión humana simulada.
+> **Estado:** demo funcional con formulario web, workflow determinista, revisión humana simulada y foundation opcional de Supabase.
 > **Uso:** demostrador tecnológico y portfolio profesional.  
 > **Restricción:** no está diseñado para diagnóstico, tratamiento, decisiones clínicas ni procesamiento de expedientes sanitarios reales.
 
@@ -32,7 +32,7 @@ SaludFlow OSS demuestra cómo automatizar de forma segura tareas administrativas
 7. Ejecuta el análisis determinista del expediente.
 8. Registra una decisión humana simulada si el caso lo requiere.
 
-El expediente se guarda en `localStorage`, aparece al inicio de `/demo` y puede procesarse con el workflow existente.
+El expediente se guarda en `localStorage` en modo local o en Supabase cuando `NEXT_PUBLIC_DEMO_MODE=false`, aparece al inicio de `/demo` y puede procesarse con el workflow existente.
 
 ## Rutas disponibles
 
@@ -53,6 +53,9 @@ El expediente se guarda en `localStorage`, aparece al inicio de `/demo` y puede 
 - Creación de expedientes web en `src/domain/web-form-intake.ts`.
 - Workflow determinista en `src/domain/process-case.ts`.
 - Persistencia local en `src/lib/demo-storage.ts`.
+- Repositorio de expedientes en `src/lib/repositories`.
+- Clientes Supabase SSR/browser en `src/lib/supabase`.
+- Migración SQL en `supabase/migrations`.
 - Tests unitarios con Vitest.
 
 ## Flujo del canal web
@@ -66,7 +69,7 @@ Confirmación
         ↓
 Expediente canónico
         ↓
-localStorage
+Repositorio local o Supabase
         ↓
 Bandeja /demo
         ↓
@@ -81,9 +84,9 @@ Usa únicamente datos ficticios. No introduzcas nombres reales, documentos de id
 
 Los expedientes de semilla usan `source: "seed_fixture"`. Los expedientes creados desde `/solicitud` usan `source: "web_form"`.
 
-## Persistencia local
+## Persistencia
 
-La demo guarda el estado en `localStorage` bajo una clave local del navegador. No usa cookies, Supabase, almacenamiento externo ni servicios de terceros.
+La demo guarda el estado en `localStorage` bajo una clave local del navegador por defecto. Si se activa Supabase, usa sesión anónima, RLS por propietario y tablas `cases`, `workflow_runs`, `audit_events` y `human_reviews`.
 
 Para reiniciar:
 
@@ -91,13 +94,26 @@ Para reiniciar:
 - usa `Reiniciar caso` dentro de un expediente;
 - o borra manualmente la clave `saludflow-oss-demo-state-v1` de `localStorage`.
 
+## Supabase foundation
+
+Se añadieron `@supabase/supabase-js` y `@supabase/ssr` para soportar un backend opcional. No se usa `@supabase/auth-helpers-nextjs`.
+
+Variables públicas:
+
+```env
+NEXT_PUBLIC_DEMO_MODE=true
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Para probar Supabase, activa `NEXT_PUBLIC_DEMO_MODE=false`, configura un proyecto de demostración, habilita usuarios anónimos y aplica la migración local. No uses claves `service_role` ni claves secretas en variables `NEXT_PUBLIC_`.
+
+Consulta [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
+
 ## Limitaciones actuales
 
 No está implementado todavía:
 
-- Supabase;
-- autenticación;
-- base de datos persistente;
 - email real;
 - Gmail, IMAP o webhooks;
 - IA;
@@ -108,7 +124,7 @@ No está implementado todavía:
 - analytics;
 - datos personales o clínicos.
 
-El canal email queda previsto para una fase futura: `email → análisis con IA → normalización → expediente canónico`. Supabase también queda previsto para persistencia, Auth y RLS.
+El canal email queda previsto para una fase futura: `email → análisis con IA → normalización → expediente canónico`. Supabase ya tiene foundation local, pero no se ha conectado a un proyecto remoto desde este repositorio.
 
 ## Requisitos previos
 
@@ -121,7 +137,7 @@ El canal email queda previsto para una fase futura: `email → análisis con IA 
 npm install
 ```
 
-No crees `.env.local` para esta iteración. La demo no necesita secretos ni servicios externos.
+La demo local no necesita secretos ni servicios externos. Si pruebas Supabase, crea `.env.local` con valores públicos de un proyecto de demostración y mantén fuera del repositorio cualquier secreto.
 
 ## Ejecución local
 
@@ -152,7 +168,7 @@ npm run build
 - [x] Foundation Next.js.
 - [x] Workflow determinista local.
 - [x] Canal web de recepción sintética.
-- [ ] Supabase, migraciones y RLS.
+- [x] Supabase foundation, migración y RLS.
 - [ ] Canal email normalizado.
 - [ ] Proveedor de IA configurable.
 - [ ] RAG sobre procedimientos.
