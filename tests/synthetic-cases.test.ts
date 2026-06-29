@@ -14,6 +14,7 @@ describe("synthetic cases", () => {
 
     cases.forEach((caseItem) => {
       expect(caseItem.synthetic).toBe(true);
+      expect(caseItem.source).toBe("seed_fixture");
       expect(validateConfidence(caseItem.confidence)).toBe(true);
       expect(caseItem.id.trim()).not.toBe("");
       expect(caseItem.subject.trim()).not.toBe("");

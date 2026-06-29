@@ -7,8 +7,10 @@ import { RiskBadge } from "@/components/RiskBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
   caseStatusLabels,
+  intakeSourceLabels,
   riskLevelLabels,
   type CaseStatus,
+  type IntakeSource,
   type RiskLevel,
 } from "@/data/synthetic-cases";
 import { calculateDemoMetrics } from "@/domain/metrics";
@@ -38,6 +40,7 @@ function filterCases(
   cases: SyntheticCase[],
   status: "all" | CaseStatus,
   risk: "all" | RiskLevel,
+  source: "all" | IntakeSource,
   query: string,
   sort: SortOrder,
 ) {
@@ -46,6 +49,7 @@ function filterCases(
   return cases
     .filter((caseItem) => status === "all" || caseItem.status === status)
     .filter((caseItem) => risk === "all" || caseItem.risk === risk)
+    .filter((caseItem) => source === "all" || caseItem.source === source)
     .filter((caseItem) => {
       if (!normalizedQuery) {
         return true;
@@ -69,6 +73,7 @@ export function DemoWorkspace() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [status, setStatus] = useState<"all" | CaseStatus>("all");
   const [risk, setRisk] = useState<"all" | RiskLevel>("all");
+  const [source, setSource] = useState<"all" | IntakeSource>("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOrder>("newest");
 
@@ -88,14 +93,15 @@ export function DemoWorkspace() {
   }, [isLoaded, state]);
 
   const filteredCases = useMemo(
-    () => filterCases(state.cases, status, risk, query, sort),
-    [query, risk, sort, state.cases, status],
+    () => filterCases(state.cases, status, risk, source, query, sort),
+    [query, risk, sort, source, state.cases, status],
   );
   const metrics = calculateDemoMetrics(state);
 
   function handleResetFilters() {
     setStatus("all");
     setRisk("all");
+    setSource("all");
     setQuery("");
     setSort("newest");
   }
@@ -108,13 +114,14 @@ export function DemoWorkspace() {
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
         {[
           ["Total", metrics.total],
           ["Pendientes", metrics.pending],
           ["Revisión humana", metrics.humanReview],
           ["Completados", metrics.completed],
           ["Riesgo alto", metrics.highRisk],
+          ["Formulario web", metrics.webFormIntakes],
         ].map(([label, value]) => (
           <div className="rounded-lg border border-border bg-surface p-5" key={label}>
             <p className="text-sm text-slate-500">{label}</p>
@@ -124,7 +131,7 @@ export function DemoWorkspace() {
       </section>
 
       <section className="rounded-lg border border-border bg-surface p-5">
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.9fr_0.9fr_0.8fr_auto]">
+        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.85fr_0.85fr_0.9fr_0.8fr_auto]">
           <label className="grid gap-2 text-sm font-medium text-slate-700">
             Buscar expediente
             <input
@@ -161,6 +168,18 @@ export function DemoWorkspace() {
                   {option === "all" ? "Todos" : riskLevelLabels[option]}
                 </option>
               ))}
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Origen
+            <select
+              className="min-h-11 rounded-md border border-border px-3 text-slate-950"
+              onChange={(event) => setSource(event.target.value as "all" | IntakeSource)}
+              value={source}
+            >
+              <option value="all">Todos</option>
+              <option value="web_form">{intakeSourceLabels.web_form}</option>
+              <option value="seed_fixture">{intakeSourceLabels.seed_fixture}</option>
             </select>
           </label>
           <label className="grid gap-2 text-sm font-medium text-slate-700">
@@ -206,6 +225,7 @@ export function DemoWorkspace() {
         </div>
         <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Metric label="Procesados" value={metrics.processed} />
+          <Metric label="Solicitudes recibidas por formulario" value={metrics.webFormIntakes} />
           <Metric label="% revisión humana" value={`${metrics.humanReviewRate}%`} />
           <Metric label="% riesgo alto" value={`${metrics.highRiskRate}%`} />
           <Metric label="Antes" value={`${metrics.beforeMinutes} min`} />
@@ -227,6 +247,11 @@ export function DemoWorkspace() {
           <div className="flex flex-wrap gap-2">
             {status !== "all" ? <StatusBadge status={status} /> : null}
             {risk !== "all" ? <RiskBadge risk={risk} /> : null}
+            {source !== "all" ? (
+              <span className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-slate-700">
+                {intakeSourceLabels[source]}
+              </span>
+            ) : null}
           </div>
         </div>
         {isLoaded ? (

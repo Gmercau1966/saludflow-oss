@@ -5,7 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import { RiskBadge } from "@/components/RiskBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SyntheticDataBadge } from "@/components/SyntheticDataBadge";
-import { caseStatusLabels, riskLevelLabels } from "@/data/synthetic-cases";
+import {
+  caseStatusLabels,
+  intakeSourceLabels,
+  responseChannelLabels,
+  riskLevelLabels,
+} from "@/data/synthetic-cases";
 import {
   canRecordDecision,
   processCase,
@@ -225,6 +230,9 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
           <span className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-slate-700">
             Confianza {Math.round(caseItem.confidence * 100)}%
           </span>
+          <span className="rounded-md border border-border px-2.5 py-1 text-xs font-semibold text-slate-700">
+            {intakeSourceLabels[caseItem.source]}
+          </span>
         </div>
       </section>
 
@@ -280,6 +288,33 @@ export function CaseDetailWorkspace({ caseId }: { caseId: string }) {
           <p className="leading-7 text-slate-700">{caseItem.originalText}</p>
         </InfoSection>
 
+        <InfoSection title="Recepción">
+          <dl className="grid gap-3 text-sm">
+            {[
+              ["Origen", intakeSourceLabels[caseItem.source]],
+              [
+                "Prioridad declarada",
+                caseItem.declaredPriority === "urgent" ? "Urgente" : "Normal",
+              ],
+              [
+                "Canal preferido",
+                responseChannelLabels[caseItem.preferredResponseChannel],
+              ],
+              [
+                "Documentos declarados",
+                caseItem.declaredDocuments.join(", ") || "Sin documentación",
+              ],
+            ].map(([label, value]) => (
+              <div className="grid gap-1" key={label}>
+                <dt className="text-slate-500">{label}</dt>
+                <dd className="font-medium text-slate-900">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </InfoSection>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
         <InfoSection title="Datos extraídos">
           <dl className="grid gap-3 text-sm">
             {[

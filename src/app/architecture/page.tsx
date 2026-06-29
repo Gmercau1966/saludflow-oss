@@ -26,6 +26,7 @@ const notImplemented = [
   "autenticación",
   "IA",
   "RAG",
+  "email",
   "workflows persistentes",
   "aprobación humana real",
   "dashboard de métricas",
@@ -67,6 +68,55 @@ export default function ArchitecturePage() {
             </div>
           </div>
           <ArchitectureFlow />
+        </section>
+
+        <section className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-lg border border-border bg-surface p-5">
+            <h2 className="text-xl font-semibold text-slate-950">
+              Canal web implementado
+            </h2>
+            <ol className="mt-5 grid gap-3 text-sm font-semibold text-slate-800">
+              {[
+                "Formulario web",
+                "Validación y normalización",
+                "Expediente canónico",
+                "Almacenamiento local",
+                "Workflow determinista",
+                "Revisión humana",
+              ].map((step) => (
+                <li
+                  className="rounded-md border border-border bg-surface-muted p-3"
+                  key={step}
+                >
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="rounded-lg border border-dashed border-border bg-surface p-5">
+            <h2 className="text-xl font-semibold text-slate-950">
+              Ampliación futura
+            </h2>
+            <ol className="mt-5 grid gap-3 text-sm font-semibold text-slate-600">
+              {[
+                "Email",
+                "Análisis con IA",
+                "Normalización",
+                "Mismo expediente canónico",
+              ].map((step) => (
+                <li
+                  className="rounded-md border border-border bg-surface-muted p-3"
+                  key={step}
+                >
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <p className="mt-4 text-sm text-slate-600">
+              El canal email, la IA y la normalización automática quedan
+              reservados para fases posteriores.
+            </p>
+          </div>
         </section>
 
         <section className="mt-8 rounded-lg border border-border bg-surface p-5">

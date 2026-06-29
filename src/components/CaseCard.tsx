@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { SyntheticCase } from "@/data/synthetic-cases";
+import { intakeSourceLabels, type SyntheticCase } from "@/data/synthetic-cases";
 import { RiskBadge } from "@/components/RiskBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { SyntheticDataBadge } from "@/components/SyntheticDataBadge";
@@ -37,6 +37,12 @@ export function CaseCard({ caseItem }: { caseItem: SyntheticCase }) {
           <dt className="text-slate-500">Categoría</dt>
           <dd className="mt-1 font-medium text-slate-900">
             {caseItem.category}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-slate-500">Origen</dt>
+          <dd className="mt-1 font-medium text-slate-900">
+            {intakeSourceLabels[caseItem.source]}
           </dd>
         </div>
         <div>

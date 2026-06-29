@@ -1,4 +1,10 @@
-import type { CaseStatus, RiskLevel, SyntheticCase } from "@/domain/types";
+import type {
+  CaseStatus,
+  IntakeSource,
+  PreferredResponseChannel,
+  RiskLevel,
+  SyntheticCase,
+} from "@/domain/types";
 
 export type {
   AuditEvent,
@@ -9,6 +15,8 @@ export type {
   DemoState,
   DocumentStatus,
   ExtractedCaseData,
+  IntakeSource,
+  PreferredResponseChannel,
   Procedure,
   ReviewDecision,
   RiskLevel,
@@ -35,6 +43,7 @@ function initialAudit(caseId: string) {
 const syntheticCases: SyntheticCase[] = [
   {
     id: "SF-DEMO-001",
+    source: "seed_fixture",
     subject: "Cambio sintético de datos de contacto",
     originalText:
       "Solicitud demo: se pide actualizar el teléfono de contacto administrativo asociado a un expediente ficticio. Se adjunta formulario firmado y justificante sintético de titularidad.",
@@ -44,6 +53,9 @@ const syntheticCases: SyntheticCase[] = [
     risk: "low",
     confidence: 0.91,
     receivedAt: "2026-06-24T09:15:00.000Z",
+    declaredPriority: "normal",
+    preferredResponseChannel: "portal",
+    declaredDocuments: ["Formulario administrativo", "Justificante sintético"],
     documentsPresented: ["Formulario administrativo", "Justificante sintético"],
     requiredDocuments: ["Formulario administrativo", "Justificante sintético"],
     documents: [
@@ -88,6 +100,7 @@ const syntheticCases: SyntheticCase[] = [
   },
   {
     id: "SF-DEMO-002",
+    source: "seed_fixture",
     subject: "Documentación sintética incompleta",
     originalText:
       "Solicitud demo: se solicita continuar un trámite administrativo, pero solo consta el formulario. Falta el justificante sintético obligatorio indicado por el procedimiento.",
@@ -97,6 +110,9 @@ const syntheticCases: SyntheticCase[] = [
     risk: "medium",
     confidence: 0.78,
     receivedAt: "2026-06-24T10:40:00.000Z",
+    declaredPriority: "urgent",
+    preferredResponseChannel: "portal",
+    declaredDocuments: ["Formulario administrativo"],
     documentsPresented: ["Formulario administrativo"],
     requiredDocuments: ["Formulario administrativo", "Justificante sintético"],
     documents: [
@@ -141,6 +157,7 @@ const syntheticCases: SyntheticCase[] = [
   },
   {
     id: "SF-DEMO-003",
+    source: "seed_fixture",
     subject: "Solicitud sintética de reembolso administrativo",
     originalText:
       "Solicitud demo: se pide revisar un posible reembolso administrativo con justificantes sintéticos completos. El caso no implica valoración clínica.",
@@ -150,6 +167,9 @@ const syntheticCases: SyntheticCase[] = [
     risk: "medium",
     confidence: 0.84,
     receivedAt: "2026-06-25T12:05:00.000Z",
+    declaredPriority: "urgent",
+    preferredResponseChannel: "portal",
+    declaredDocuments: ["Formulario de reembolso", "Justificante sintético"],
     documentsPresented: ["Formulario de reembolso", "Justificante sintético"],
     requiredDocuments: ["Formulario de reembolso", "Justificante sintético"],
     documents: [
@@ -194,6 +214,7 @@ const syntheticCases: SyntheticCase[] = [
   },
   {
     id: "SF-DEMO-004",
+    source: "seed_fixture",
     subject: "Reclamación administrativa sintética",
     originalText:
       "Solicitud demo: se registra una reclamación administrativa por desacuerdo con un plazo de respuesta simulado. Debe escalarse y no puede aprobarse automáticamente.",
@@ -203,6 +224,9 @@ const syntheticCases: SyntheticCase[] = [
     risk: "high",
     confidence: 0.82,
     receivedAt: "2026-06-26T15:20:00.000Z",
+    declaredPriority: "urgent",
+    preferredResponseChannel: "email_simulated",
+    declaredDocuments: ["Formulario de reclamación", "Relato sintético"],
     documentsPresented: ["Formulario de reclamación", "Relato sintético"],
     requiredDocuments: ["Formulario de reclamación", "Relato sintético"],
     documents: [
@@ -247,6 +271,7 @@ const syntheticCases: SyntheticCase[] = [
   },
   {
     id: "SF-DEMO-005",
+    source: "seed_fixture",
     subject: "Cambio sintético de cita administrativa",
     originalText:
       "Solicitud demo: se pide cambiar una cita administrativa de revisión documental a otra fecha disponible. No se solicita consejo clínico ni valoración sanitaria.",
@@ -256,6 +281,9 @@ const syntheticCases: SyntheticCase[] = [
     risk: "low",
     confidence: 0.94,
     receivedAt: "2026-06-27T08:30:00.000Z",
+    declaredPriority: "normal",
+    preferredResponseChannel: "portal",
+    declaredDocuments: ["Solicitud de cambio de cita"],
     documentsPresented: ["Solicitud de cambio de cita"],
     requiredDocuments: ["Solicitud de cambio de cita"],
     documents: [
@@ -326,4 +354,15 @@ export const riskLevelLabels: Record<RiskLevel, string> = {
   low: "Bajo",
   medium: "Medio",
   high: "Alto",
+};
+
+export const intakeSourceLabels: Record<IntakeSource, string> = {
+  web_form: "Formulario web",
+  seed_fixture: "Fixture de demostración",
+  email: "Email (futuro)",
+};
+
+export const responseChannelLabels: Record<PreferredResponseChannel, string> = {
+  portal: "Portal de seguimiento",
+  email_simulated: "Email simulado",
 };

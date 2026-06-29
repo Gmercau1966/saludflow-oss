@@ -21,7 +21,11 @@ export function parseDemoState(rawValue: string | null): DemoState {
     if (
       parsed.storageVersion !== 1 ||
       !Array.isArray(parsed.cases) ||
-      parsed.cases.some((caseItem) => caseItem?.synthetic !== true)
+      parsed.cases.some(
+        (caseItem) =>
+          caseItem?.synthetic !== true ||
+          (caseItem?.source !== "web_form" && caseItem?.source !== "seed_fixture"),
+      )
     ) {
       return createInitialDemoState();
     }
@@ -59,16 +63,58 @@ export function saveDemoState(state: DemoState): void {
   window.localStorage.setItem(DEMO_STORAGE_KEY, serializeDemoState(state));
 }
 
+export function addCaseToState(state: DemoState, caseItem: SyntheticCase): DemoState {
+  const withoutDuplicate = state.cases.filter((item) => item.id !== caseItem.id);
+
+  return {
+    ...state,
+    cases: [caseItem, ...withoutDuplicate],
+    lastUpdatedAt: new Date().toISOString(),
+  };
+}
+
 export function resetCaseInState(state: DemoState, caseId: string): DemoState {
   const freshCase = getSyntheticCases().find((caseItem) => caseItem.id === caseId);
-  if (!freshCase) {
+  if (freshCase) {
+    return {
+      ...state,
+      cases: state.cases.map((caseItem) =>
+        caseItem.id === caseId ? freshCase : caseItem,
+      ),
+      lastUpdatedAt: new Date().toISOString(),
+    };
+  }
+
+  const existingCase = state.cases.find((caseItem) => caseItem.id === caseId);
+  if (!existingCase || existingCase.source !== "web_form") {
     return state;
   }
 
   return {
     ...state,
     cases: state.cases.map((caseItem) =>
-      caseItem.id === caseId ? freshCase : caseItem,
+      caseItem.id === caseId
+        ? {
+            ...existingCase,
+            status: "pending",
+            risk:
+              existingCase.category === "Reclamación administrativa"
+                ? "high"
+                : existingCase.category === "Reembolso"
+                  ? "medium"
+                  : "low",
+            confidence: 0.86,
+            draftResponse: "",
+            analysis: undefined,
+            review: undefined,
+            requiresHumanReview: existingCase.documents.some(
+              (document) => document.status === "missing",
+            ),
+            auditEvents: existingCase.auditEvents.filter(
+              (event) => event.type === "intake_received",
+            ),
+          }
+        : caseItem,
     ),
     lastUpdatedAt: new Date().toISOString(),
   };

@@ -58,6 +58,12 @@ export default function Home() {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
                   className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-strong"
+                  href="/solicitud"
+                >
+                  Crear solicitud
+                </Link>
+                <Link
+                  className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-surface-muted"
                   href="/demo"
                 >
                   Ver demostración

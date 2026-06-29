@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { DemoWorkspace } from "@/components/demo/DemoWorkspace";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -25,6 +26,12 @@ export default function DemoPage() {
               Filtra, abre y procesa expedientes mediante reglas deterministas.
               Todo funciona con fixtures locales y estado en localStorage.
             </p>
+            <Link
+              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accent-strong"
+              href="/solicitud"
+            >
+              Nueva solicitud
+            </Link>
           </section>
           <SecurityNotice />
         </div>

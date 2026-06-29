@@ -18,6 +18,7 @@ export type ReviewDecision =
   | "escalate";
 
 export type AuditEventType =
+  | "intake_received"
   | "case_opened"
   | "analysis_started"
   | "classification_completed"
@@ -33,7 +34,25 @@ export type CaseCategory =
   | "Documentación incompleta"
   | "Reembolso"
   | "Cambio de cita"
-  | "Reclamación administrativa";
+  | "Reclamación administrativa"
+  | "Consulta sobre un procedimiento";
+
+export type IntakeSource = "web_form" | "seed_fixture" | "email";
+
+export type DeclaredPriority = "normal" | "urgent";
+
+export type PreferredResponseChannel = "portal" | "email_simulated";
+
+export type WebFormSubmission = {
+  category: CaseCategory;
+  subject: string;
+  description: string;
+  relatedDate?: string;
+  declaredPriority: DeclaredPriority;
+  preferredResponseChannel: PreferredResponseChannel;
+  declaredDocuments: string[];
+  syntheticDataConfirmed: true;
+};
 
 export type ExtractedCaseData = {
   procedureType: CaseCategory;
@@ -77,9 +96,9 @@ export type AuditEvent = {
   id: string;
   timestamp: string;
   type: AuditEventType;
-  actor: "Sistema" | "Usuario demo";
+  actor: "Sistema" | "Usuario demo" | "Solicitante demo";
   description: string;
-  workflowVersion: "deterministic-v0.1";
+  workflowVersion: "deterministic-v0.1" | "web-form-intake-v0.1";
   result: string;
 };
 
@@ -93,6 +112,7 @@ export type ReviewRecord = {
 
 export type SyntheticCase = {
   id: string;
+  source: IntakeSource;
   subject: string;
   originalText: string;
   expectedCategory: CaseCategory;
@@ -101,6 +121,9 @@ export type SyntheticCase = {
   risk: RiskLevel;
   confidence: number;
   receivedAt: string;
+  declaredPriority: DeclaredPriority;
+  preferredResponseChannel: PreferredResponseChannel;
+  declaredDocuments: string[];
   documentsPresented: string[];
   requiredDocuments: string[];
   documents: CaseDocument[];

@@ -110,6 +110,11 @@ export function calculateRisk(
     rules.push("cambio de datos completo -> riesgo bajo");
   }
 
+  if (caseItem.expectedCategory === "Consulta sobre un procedimiento") {
+    factors.push("Consulta informativa sobre procedimiento ficticio.");
+    rules.push("consulta de procedimiento -> riesgo bajo");
+  }
+
   if (hasMissingDocuments || caseItem.expectedCategory === "Reembolso") {
     return { risk: "medium", factors, rules };
   }

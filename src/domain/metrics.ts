@@ -10,6 +10,9 @@ export function calculateDemoMetrics(state: DemoState) {
     (caseItem) => caseItem.requiresHumanReview || caseItem.status === "human_review",
   ).length;
   const highRisk = state.cases.filter((caseItem) => caseItem.risk === "high").length;
+  const webFormIntakes = state.cases.filter(
+    (caseItem) => caseItem.source === "web_form",
+  ).length;
   const approvedWithoutEdit = state.cases.filter(
     (caseItem) => caseItem.review?.decision === "approve",
   ).length;
@@ -26,6 +29,7 @@ export function calculateDemoMetrics(state: DemoState) {
     humanReview,
     completed,
     highRisk,
+    webFormIntakes,
     processed,
     humanReviewRate: total === 0 ? 0 : Math.round((humanReview / total) * 100),
     highRiskRate: total === 0 ? 0 : Math.round((highRisk / total) * 100),
